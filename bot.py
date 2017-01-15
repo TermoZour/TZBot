@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from telegram.ext import Updater, CommandHandler
+from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
 import subprocess
 import configparser
 import logging
 import strings
 
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
+logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 config = configparser.ConfigParser()
 config.read("properties.ini")
@@ -18,9 +18,21 @@ updater = Updater(config["KEY"]["tg_API_token"])
 global owner_ID
 owner_ID = int(config["ADMIN"]["admin_ID"])
 
+global Alexandra_ID
+alexandra_ID = int(config["SECRET"]["Alexandra_ID"])
+
 
 def error(bot, update, error):
     logger.warn('Update "%s" caused error "%s"' % (update, error))
+
+def start(bot, update):
+	update.message.reply_text(strings.stringHelp)
+
+def unknown(bot, update):
+	update.message.reply_text(strings.errorUnknownCommand)
+
+def help(bot, update):
+	update.message.reply_text(text=help_all)
 
 
 def ip(bot, update):
@@ -35,19 +47,6 @@ def ip(bot, update):
         update.message.reply_text(strings.stringAdminOnly)
 
 
-
-def start(bot, update):
-	update.message.reply_text(strings.stringHelp)
-
-
-def unknown(bot, update):
-	update.message.reply_text(strings.errorUnknownCommand)
-
-
-def help(bot, update):
-	update.message.reply_text(text=help_all)
-
-
 def getid(bot, update):
 	sender = update.message.from_user
 
@@ -57,7 +56,12 @@ def getid(bot, update):
 
 
 def alexandra(bot, update):
- update.message.reply_text(strings.stringAlexandra)
+    sender = update.message.from_user
+
+    if sender.id == alexandra_ID:
+        supdate.message.reply_text(strings.stringAlexandra)
+    else:
+        update.message.reply_text(strings.errorAlexandra)
 
 
 help_all = strings.help_message + strings.help_ip + strings.help_id
@@ -65,24 +69,13 @@ help_all = strings.help_message + strings.help_ip + strings.help_id
 
 dispatcher = updater.dispatcher
 
-ip_handler = CommandHandler("ip", ip)
-dispatcher.add_handler(ip_handler)
+dispatcher.add_handler(CommandHandler("ip", ip))
+dispatcher.add_handler(CommandHandler("start", start))
+dispatcher.add_handler(CommandHandler("help", help))
+dispatcher.add_handler(CommandHandler("id", getid))
+dispatcher.add_handler(CommandHandler("alexandra", alexandra))
 
-start_handler = CommandHandler("start", start)
-dispatcher.add_handler(start_handler)
-
-unknown_handler = CommandHandler("unknown", unknown)
-dispatcher.add_handler(unknown_handler)
-
-help_handler = CommandHandler("help", help)
-dispatcher.add_handler(help_handler)
-
-tg_id_handler = CommandHandler("id", getid)
-dispatcher.add_handler(tg_id_handler)
-
-alexandra_handler = CommandHandler("alexandra", alexandra)
-dispatcher.add_handler(alexandra_handler)
-
+dispatcher.add_handler(MessageHandler(Filters.command, unknown))
 
 updater.start_polling()
 updater.idle()
