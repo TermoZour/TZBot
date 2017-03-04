@@ -2,6 +2,8 @@ errorMessage = "Oh dang! An error has occured."
 errorTimeout = "Oh dang! A timeout error has occured"
 errorUnknownCommand = "I'm sorry, I don't know this command. Type /help for a list of commands."
 errorAlexandra = "Only Alexandra can issue this command"
+errorNoFile = "Either file is missing or is not readable. Creating."
+
 
 stringHelp = "Type /help for a list of commands."
 stringAdminOnly = "Only the admin can issue this command."
