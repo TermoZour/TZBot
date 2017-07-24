@@ -3,7 +3,7 @@
 
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
 import subprocess
-import configparser
+import ConfigParser
 import logging
 import strings
 import os
@@ -11,15 +11,15 @@ import json
 
 logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-config = configparser.ConfigParser()
+config = ConfigParser.ConfigParser()
 config.read("properties.ini")
 
-updater = Updater(config["KEY"]["tg_API_token"])
+updater = Updater(config.get("KEY", "tg_API_token"))
 
 loc_notesjson = "./data/notes.json"
 
 global owner_id
-owner_id = int(config["ADMIN"]["admin_id"])
+owner_id = int(config.get("ADMIN", "admin_id"))
 
 
 def loadjson(path):
@@ -59,9 +59,8 @@ def ip(bot, update):
 
     if sender.id == owner_id:
         try:
-            update.message.reply_text("Server IP: " + subprocess.check_output(["curl", "ipinfo.io/ip"], universal_newlines=True, timeout=5))
-        except CalledProcessError: update.message.reply_text(strings.errorMessage)
-        except TimeoutExpired: update.message.reply_text(strings.errorTimeout)
+            update.message.reply_text("Server IP: " + subprocess.check_output(["curl", "ipinfo.io/ip"], universal_newlines=True))
+        except subprocess.CalledProcessError: update.message.reply_text(strings.errorMessage)
     else:
         update.message.reply_text(strings.stringAdminOnly)
 
