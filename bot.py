@@ -2,7 +2,9 @@
 # -*- coding: utf-8 -*-
 
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
+
 import subprocess
+import requests
 import ConfigParser
 import logging
 import strings
@@ -59,8 +61,11 @@ def ip(bot, update):
 
     if sender.id == owner_id:
         try:
-            update.message.reply_text("Server IP: " + subprocess.check_output(["curl", "ipinfo.io/ip"], universal_newlines=True))
-        except subprocess.CalledProcessError: update.message.reply_text(strings.errorMessage)
+            res = requests.get("http://ipinfo.io/ip")
+            ip = res.text # might need a .decode("utf-8") if you're using python 2. Test it!
+            update.message.reply_text("Server IP: " + ip)
+        except CalledProcessError: update.message.reply_text(strings.errorMessage)
+        except TimeoutExpired: update.message.reply_text(strings.errorTimeout)
     else:
         update.message.reply_text(strings.stringAdminOnly)
 

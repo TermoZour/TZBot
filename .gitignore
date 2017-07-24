@@ -1,0 +1,10 @@
+
+properties\.ini
+
+__pycache__/strings\.cpython-35\.pyc
+
+data/notes\.json
+
+data/scripts/xos/reposync\.sh
+
+data/scripts/xos/reposync_fast\.sh
