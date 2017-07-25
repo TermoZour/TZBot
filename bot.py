@@ -20,17 +20,15 @@ updater = Updater(config.get("KEY", "tg_API_token"))
 
 loc_notesjson = "./data/notes.json"
 
-global owner_id
 owner_id = int(config.get("ADMIN", "admin_id"))
 
 
 def loadjson(path):
     if not os.path.isfile(path) or not os.access(path, os.R_OK):
-        update.message.reply_text(strings.errorNoFile)
         name = {}
         dumpjson(path, name)
-    with open(path) as file:
-        name = json.load(file)
+    with open(path) as f:
+        name = json.load(f)
     return name
 
 
@@ -39,17 +37,16 @@ def dumpjson(filename, var):
         json.dump(var, file)
 
 
-def error(bot, update, error):
-    logger.warn('Update "%s" caused error "%s"' % (update, error))
-
 def start(bot, update):
-	update.message.reply_text(strings.stringHelp)
+    update.message.reply_text(strings.stringHelp)
+
 
 def unknown(bot, update):
-        update.message.reply_text(strings.errorUnknownCommand)
+    update.message.reply_text(strings.errorUnknownCommand)
+
 
 def help(bot, update):
-	update.message.reply_text(text=help_all)
+    update.message.reply_text(text=help_all)
 
 
 def test(bot, update):
@@ -60,22 +57,20 @@ def ip(bot, update):
     sender = update.message.from_user
 
     if sender.id == owner_id:
-        try:
-            res = requests.get("http://ipinfo.io/ip")
-            ip = res.text # might need a .decode("utf-8") if you're using python 2. Test it!
-            update.message.reply_text("Server IP: " + ip)
-        except CalledProcessError: update.message.reply_text(strings.errorMessage)
-        except TimeoutExpired: update.message.reply_text(strings.errorTimeout)
+        res = requests.get("http://ipinfo.io/ip")
+        ip = res.text  #  might need a .decode("utf-8") if you're using python 2. Test it!
+        update.message.reply_text("Server IP: " + ip)
+
     else:
         update.message.reply_text(strings.stringAdminOnly)
 
 
 def getid(bot, update):
-	sender = update.message.from_user
+    sender = update.message.from_user
 
-	sender_id = str(sender.id)
+    sender_id = str(sender.id)
 
-	update.message.reply_text("@" + sender.username + "'s ID is " + sender_id)
+    update.message.reply_text("@" + sender.username + "'s ID is " + sender_id)
 
 
 help_all = strings.help_message + strings.help_ip + strings.help_id
@@ -113,15 +108,14 @@ def get_note(bot, update, args):
         notes[chat_id] = {}
 
     if len(args) == 1:
-        msg = ""
         try:
             msg = notes[chat_id][args[0]]
         except KeyError:
-            msg = errNoNoteFound + args[0]
+            msg = strings.errNoNoteFound + args[0]
 
-        update.message.reply_text(msg)
     else:
-        update.message.reply_text(strings.errBadFormat)
+        msg = strings.errBadFormat
+    update.message.reply_text(msg)
 
 
 def all_notes(bot, update, args):
@@ -135,7 +129,7 @@ def all_notes(bot, update, args):
 
     msg = "No notes in this chat."
     if len(notes[chat_id]) > 0:
-        msg = msgNotesForChat
+        msg = "These are the notes in the chat:\n"
         for note in notes[chat_id]:
             msg += "\n" + note
 
@@ -143,9 +137,6 @@ def all_notes(bot, update, args):
 
 
 def reposync_xos(bot, update, args):
-
-    print("Hello World\nHi")
-
     sender = update.message.from_user
 
     string_args = ''.join(args)
@@ -167,6 +158,7 @@ def reposync_xos(bot, update, args):
     else:
         update.message.reply_text(strings.stringAdminOnly)
 
+
 dispatcher = updater.dispatcher
 
 dispatcher.add_handler(CommandHandler("test", test))
@@ -181,7 +173,6 @@ dispatcher.add_handler(CommandHandler("get", get_note, pass_args=True))
 dispatcher.add_handler(CommandHandler("note", all_notes, pass_args=True))
 
 dispatcher.add_handler(CommandHandler("reposync", reposync_xos, pass_args=True))
-
 
 updater.start_polling()
 updater.idle()
