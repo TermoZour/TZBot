@@ -134,9 +134,6 @@ def all_notes(bot, update, args):
 
     update.effective_message.reply_text(msg)
 
-def komzyi(bot, update):
-    update.effective_message.reply_text("Ke faci ma komzyi cu bidonul ?")
-
 
 def reposync_xos(bot, update, args):
     sender = update.message.from_user
@@ -179,8 +176,6 @@ def main():
     dispatcher.add_handler(CommandHandler("note", all_notes, pass_args=True))
 
     dispatcher.add_handler(CommandHandler("reposync", reposync_xos, pass_args=True))
-
-    dispatcher.add_handler(CommandHandler("komzyi", komzyi))
 
     updater.start_polling()
     updater.idle()
