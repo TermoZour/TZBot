@@ -11,12 +11,11 @@ import strings
 import os
 import json
 
-logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
 config = ConfigParser.ConfigParser()
 config.read("properties.ini")
 
-updater = Updater(config.get("KEY", "tg_API_token"))
+
 
 loc_notesjson = "./data/notes.json"
 
@@ -38,19 +37,19 @@ def dumpjson(filename, var):
 
 
 def start(bot, update):
-    update.message.reply_text(strings.stringHelp)
+    update.effective_message.reply_text(strings.stringHelp)
 
 
 def unknown(bot, update):
-    update.message.reply_text(strings.errorUnknownCommand)
+    update.effective_message.reply_text(strings.errorUnknownCommand)
 
 
 def help(bot, update):
-    update.message.reply_text(text=help_all)
+    update.effective_message.reply_text(text=help_all)
 
 
 def test(bot, update):
-    update.message.reply_text("test message")
+    update.effective_message.reply_text("test message")
 
 
 def ip(bot, update):
@@ -59,10 +58,10 @@ def ip(bot, update):
     if sender.id == owner_id:
         res = requests.get("http://ipinfo.io/ip")
         ip = res.text  #  might need a .decode("utf-8") if you're using python 2. Test it!
-        update.message.reply_text("Server IP: " + ip)
+        update.effective_message.reply_text("Server IP: " + ip)
 
     else:
-        update.message.reply_text(strings.stringAdminOnly)
+        update.effective_message.reply_text(strings.stringAdminOnly)
 
 
 def getid(bot, update):
@@ -70,7 +69,7 @@ def getid(bot, update):
 
     sender_id = str(sender.id)
 
-    update.message.reply_text("@" + sender.username + "'s ID is " + sender_id)
+    update.effective_message.reply_text("@" + sender.username + "'s ID is " + sender_id)
 
 
 help_all = strings.help_message + strings.help_ip + strings.help_id
@@ -91,9 +90,9 @@ def save_note(bot, update, args):
         del args[0]
         note_data = " ".join(args)
         notes[chat_id][notename] = note_data
-        update.message.reply_text("Added new note \"" + notename + "\" with content \"" + note_data + "\".")
+        update.effective_message.reply_text("Added new note \"" + notename + "\" with content \"" + note_data + "\".")
     else:
-        update.message.reply_text(strings.errBadFormat)
+        update.effective_message.reply_text(strings.errBadFormat)
 
     dumpjson(loc_notesjson, notes)
 
@@ -115,7 +114,7 @@ def get_note(bot, update, args):
 
     else:
         msg = strings.errBadFormat
-    update.message.reply_text(msg)
+    update.effective_message.reply_text(msg)
 
 
 def all_notes(bot, update, args):
@@ -133,7 +132,10 @@ def all_notes(bot, update, args):
         for note in notes[chat_id]:
             msg += "\n" + note
 
-    update.message.reply_text(msg)
+    update.effective_message.reply_text(msg)
+
+def komzyi(bot, update):
+    update.effective_message.reply_text("Ke faci ma komzyi cu bidonul ?")
 
 
 def reposync_xos(bot, update, args):
@@ -143,36 +145,45 @@ def reposync_xos(bot, update, args):
 
     if sender.id == owner_id:
         if "fast" == string_args:
-            update.message.reply_text("User " + "@" + sender.username + " issued reposync fast command")
+            update.effective_message.reply_text("User " + "@" + sender.username + " issued reposync fast command")
 
             subprocess.call("./data/scripts/xos/reposync_fast.sh")
 
-            update.message.reply_text("Reposync fast completed")
+            update.effective_message.reply_text("Reposync fast completed")
         else:
-            update.message.reply_text("User " + "@" + sender.username + " issued reposync command")
+            update.effective_message.reply_text("User " + "@" + sender.username + " issued reposync command")
 
             subprocess.call("./data/scripts/xos/reposync.sh")
 
-            update.message.reply_text("Reposync fast completed")
+            update.effective_message.reply_text("Reposync fast completed")
 
     else:
-        update.message.reply_text(strings.stringAdminOnly)
+        update.effective_message.reply_text(strings.stringAdminOnly)
 
+def main():
+    logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
-dispatcher = updater.dispatcher
+    updater = Updater(config.get("KEY", "tg_API_token"))
 
-dispatcher.add_handler(CommandHandler("test", test))
+    dispatcher = updater.dispatcher
 
-dispatcher.add_handler(CommandHandler("ip", ip))
-dispatcher.add_handler(CommandHandler("start", start))
-dispatcher.add_handler(CommandHandler("help", help))
-dispatcher.add_handler(CommandHandler("id", getid))
+    dispatcher.add_handler(CommandHandler("test", test))
 
-dispatcher.add_handler(CommandHandler("save", save_note, pass_args=True))
-dispatcher.add_handler(CommandHandler("get", get_note, pass_args=True))
-dispatcher.add_handler(CommandHandler("note", all_notes, pass_args=True))
+    dispatcher.add_handler(CommandHandler("start", start))
+    dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler("ip", ip))
+    dispatcher.add_handler(CommandHandler("id", getid))
 
-dispatcher.add_handler(CommandHandler("reposync", reposync_xos, pass_args=True))
+    dispatcher.add_handler(CommandHandler("save", save_note, pass_args=True))
+    dispatcher.add_handler(CommandHandler("get", get_note, pass_args=True))
+    dispatcher.add_handler(CommandHandler("note", all_notes, pass_args=True))
 
-updater.start_polling()
-updater.idle()
+    dispatcher.add_handler(CommandHandler("reposync", reposync_xos, pass_args=True))
+
+    dispatcher.add_handler(CommandHandler("komzyi", komzyi))
+
+    updater.start_polling()
+    updater.idle()
+
+if __name__ == '__main__':
+    main()
