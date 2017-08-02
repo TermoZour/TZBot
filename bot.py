@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 from telegram.ext import Updater, CommandHandler, Filters, MessageHandler
+from telegram.ext.dispatcher import run_async
 
 import subprocess
 import requests
@@ -10,17 +11,16 @@ import logging
 import strings
 import os
 import json
+import time
+import sys
 
 
 config = ConfigParser.ConfigParser()
 config.read("properties.ini")
 
-
-
 loc_notesjson = "./data/notes.json"
 
 owner_id = int(config.get("ADMIN", "admin_id"))
-
 
 def loadjson(path):
     if not os.path.isfile(path) or not os.access(path, os.R_OK):
@@ -49,8 +49,18 @@ def help(bot, update):
 
 
 def test(bot, update):
-    update.effective_message.reply_text("test message")
+    update.effective_message.reply_text("Bot status: Online, duh")
 
+def restart(bot, update):
+    sender = update.message.from_user
+
+    if sender.id == owner_id:
+        update.effective_message.reply_text("Bot is restarting...")
+        time.sleep(0.5)
+        os.execl(sys.executable, sys.executable, *sys.argv)
+        #os.execv(sys.executable, ['python'] + sys.argv
+    else:
+        update.effective_message.reply_text(strings.stringAdminOnly)
 
 def ip(bot, update):
     sender = update.message.from_user
@@ -59,7 +69,6 @@ def ip(bot, update):
         res = requests.get("http://ipinfo.io/ip")
         ip = res.text  #  might need a .decode("utf-8") if you're using python 2. Test it!
         update.effective_message.reply_text("Server IP: " + ip)
-
     else:
         update.effective_message.reply_text(strings.stringAdminOnly)
 
@@ -134,7 +143,7 @@ def all_notes(bot, update, args):
 
     update.effective_message.reply_text(msg)
 
-
+@run_async
 def reposync_xos(bot, update, args):
     sender = update.message.from_user
 
@@ -164,10 +173,12 @@ def main():
 
     dispatcher = updater.dispatcher
 
-    dispatcher.add_handler(CommandHandler("test", test))
-
     dispatcher.add_handler(CommandHandler("start", start))
     dispatcher.add_handler(CommandHandler("help", help))
+    dispatcher.add_handler(CommandHandler('restart_bot', restart))
+
+    dispatcher.add_handler(CommandHandler("test", test))
+
     dispatcher.add_handler(CommandHandler("ip", ip))
     dispatcher.add_handler(CommandHandler("id", getid))
 
