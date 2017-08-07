@@ -10,3 +10,5 @@ data/scripts/xos/reposync\.sh
 data/scripts/xos/reposync_fast\.sh
 
 strings\.pyc
+
+data/id_file\.json

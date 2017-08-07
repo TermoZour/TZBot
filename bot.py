@@ -19,6 +19,7 @@ config = ConfigParser.ConfigParser()
 config.read("properties.ini")
 
 loc_notesjson = "./data/notes.json"
+loc_restart_id = "./data/id_file.json"
 
 owner_id = int(config.get("ADMIN", "admin_id"))
 
@@ -54,7 +55,12 @@ def test(bot, update):
 def restart(bot, update):
     sender = update.message.from_user
 
+    chat_id = str(update.message.chat_id)
+
     if sender.id == owner_id:
+        with open(loc_restart_id, "w") as f:
+            f.write(chat_id)
+
         update.effective_message.reply_text("Bot is restarting...")
         time.sleep(0.5)
         os.execl(sys.executable, sys.executable, *sys.argv)
@@ -170,6 +176,8 @@ def main():
     logging.basicConfig(level=logging.DEBUG, format='%(asctime)s - %(name)s - %(levelname)s - %(message)s')
 
     updater = Updater(config.get("KEY", "tg_API_token"))
+
+    os.remove(loc_restart_id)
 
     dispatcher = updater.dispatcher
 
